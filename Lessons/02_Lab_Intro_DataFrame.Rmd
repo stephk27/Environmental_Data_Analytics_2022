@@ -13,6 +13,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 A **data frame** is used for storing data tables. It a list a vector of equal length. 
 
+SK Notes:
+Frames do not need to be in the same format.
+Frames must be in the same format in matrices.
+
+Class:
 When we import data to R, data frame is the preferred way for storing the data because columns can have different modes (character, numeric, integer, logical, complex).
 
 

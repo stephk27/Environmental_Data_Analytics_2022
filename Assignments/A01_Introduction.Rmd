@@ -1,6 +1,6 @@
 ---
 title: "Assignment 1: Introduction"
-author: "Student Name"
+author: "Stephanie Kinser"
 output: pdf_document
 geometry: margin=2.54cm
 ---
@@ -22,21 +22,21 @@ The completed exercise is due on <>.
 
 1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.
 
-> Answer: 
+> Answer: I was introduced to R in Environmental Data Analytics last year in Fall 2020. I also had a small introduction to coding in Python during Energy Modeling and Power Markets. To gain more experience, I used some R during my internship with the Federal Energy Regulatory Commission last summer. I primarily calculated summary statistics and made simple tables with ggplot. I also created a few maps by updating a colleague's existing code. I don't have prior experience with Git.
 
 2. Are there any components of the course about which you feel confident?
 
-> Answer: 
+> Answer: I feel confident about the first two lessons and data visualization, though I'm excited to improve on the visualization.
 
 3. Are there any components of the course about which you feel apprehensive?
 
-> Answer: 
+> Answer: I'm more apprehensive about the data scraping and data wrangling. During my internship, I especially struggled with getting data into a format that was workable in R, specifically parsing dates.
 
 
 ## 2) GitHub
 
 Provide a link below to your forked course repository in GitHub. Make sure you have pulled all recent changes from the course repository  and that you have updated your course README file. 
 
-> Answer: 
+> Answer: https://github.com/stephk27/Environmental_Data_Analytics_2022
 
 

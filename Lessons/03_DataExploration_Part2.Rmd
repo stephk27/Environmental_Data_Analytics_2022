@@ -19,6 +19,8 @@ editor_options:
 
 Why is data exploration our first step in analyzing a dataset? What information do we gain? How does data exploration aid in our decision-making for data analysis steps further down the pipeline?
 
+SK: Essential to understand structure, assumptions, trends, etc.
+
 ## Import data and view summaries
 
 ```{r, message = FALSE}
@@ -35,19 +37,21 @@ USGS.flow.data <- read.csv("./Data/Processed/USGS_Site02085000_Flow_Processed.cs
 # Alternate option: click on data frame in Environment tab
 
 colnames(USGS.flow.data)
-str(USGS.flow.data)
+str(USGS.flow.data) #structure of data
 dim(USGS.flow.data)
 
 # Check our date column
 class(USGS.flow.data$datetime)
 
-USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%Y-%m-%d") 
+USGS.flow.data$datetime <- as.Date(USGS.flow.data$datetime, format = "%Y-%m-%d") #date should show how it is currently structured, not how you want to change it
 class(USGS.flow.data$datetime)
 
 ```
 
 
 ## Visualization for Data Exploration
+
+SK: first think about how the data is measured and whether there could be biases
 
 Although the `summary()` function is helpful in getting an idea of the spread of values in a numeric dataset, it can be useful to create visual representations of the data to help form hypotheses and direct downstream data analysis. Below is a summary of the useful types of graphs for data exploration.
 
@@ -58,8 +62,11 @@ Note: each of these approaches utilize the package "ggplot2". We will be coverin
 Visualize count data for categorical variables. 
 
 ```{r, fig.height = 3, fig.width = 4}
-ggplot(USGS.flow.data, aes(x = discharge.mean.approval)) +
+#ggplot - stands for "grammer of graphics"
+ggplot((USGS.flow.data, aes(x = discharge.mean.approval) +
   geom_bar()
+#x= which attribute the bar chart will show
+#bar chart: good for categorical data
 ```
 
 ### Histogram (function: geom_histogram)
@@ -71,11 +78,12 @@ Visualize distributions of values for continuous numerical variables. What is ha
 ggplot(USGS.flow.data) +
   geom_histogram(aes(x = discharge.mean))
 
-#
+#define binwidth
 ggplot(USGS.flow.data) +
   geom_histogram(aes(x = discharge.mean), binwidth = 10)
 
-#
+#specify number of bins
+#with Help function you can find default number of bins
 ggplot(USGS.flow.data) +
   geom_histogram(aes(x = discharge.mean), bins = 20)
 
@@ -91,17 +99,20 @@ ggplot(USGS.flow.data) +
 ```
 ### Frequency line graph (function: geom_freqpoly)
 
-An alternate to a histogram is a frequency polygon graph (distributions of values for continuous numerical variables). Instead of displaying bars,  counts of continuous variables are displayed as lines. This is advantageous if you want to display multiple variables or categories of variables at once.
+An alternate to a histogram is a frequency polygon graph (distributions of values for continuous numerical variables). Instead of displaying bars,  counts of **continuous variables** are displayed as lines. This is advantageous if you want to display multiple variables or categories of variables at once.
 
 ```{r, fig.height = 3, fig.width = 4}
-#
+#geom_freqpoly
+#second line adds in histogram from before
 ggplot(USGS.flow.data) +
+  geom_histogram(aes(x = gage.height.mean), bins = 50)+
   geom_freqpoly(aes(x = gage.height.mean), bins = 50) +
   geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "darkgray") +
   geom_freqpoly(aes(x = gage.height.max), bins = 50,  lty = 2) +
   scale_x_continuous(limits = c(0, 10))
+#lty = line type to make dashed, etc.
 
-#
+#colors the values by gage.height.mean.approval - will assign colors to each value
 ggplot(USGS.flow.data) +
   geom_freqpoly(aes(x = gage.height.mean, color = gage.height.mean.approval), bins = 50) +
   scale_x_continuous(limits = c(0, 10)) +
@@ -123,15 +134,17 @@ A box-and-whisker plot is yet another alternative to histograms (distributions o
 An alternate option is a violin plot, which displays density distributions, somewhat like a hybrid of the box-and-whiskers and the frequency polygon plot.
 
 ```{r, fig.height = 3, fig.width = 4}
-#
+#box plot - shows box within IQR &  outliers
+#x & y shows two data sets
 ggplot(USGS.flow.data) +
   geom_boxplot(aes(x = gage.height.mean.approval, y = gage.height.mean))
 
-#
+#boxplot with slicing with group command
+#cutwidth shows distribution of values within selected data - x & y on axes
 ggplot(USGS.flow.data) +
   geom_boxplot(aes(x = gage.height.mean, y = discharge.mean, group = cut_width(gage.height.mean, 1)))
 
-#
+#violin plot: adds distribution and range of distribution within IQR through fatness
 ggplot(USGS.flow.data) +
   geom_violin(aes(x = gage.height.mean.approval, y = gage.height.mean), 
               draw_quantiles = c(0.25, 0.5, 0.75))
@@ -144,6 +157,7 @@ Visualize relationships between continuous numerical variables.
 ggplot(USGS.flow.data) +
   geom_point(aes(x = discharge.mean, y = gage.height.mean))
 
+#showing mean discharge at different times
 ggplot(USGS.flow.data) +
   geom_point(aes(x = datetime, y = discharge.mean))
 ```
