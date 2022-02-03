@@ -31,7 +31,7 @@ NTL.phys.data <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", s
 
 class(NTL.phys.data$sampledate)
 # Format sampledate as date
-NTL.phys.data$sampledate <- as.Date(NTL.phys.data$sampledate, format = "%m/%d/%y")
+NTL.phys.data$sampledate <- as.Date(NTL.phys.data$sampledate, format = "%m/%d/%y") #must provide format that date is currently in
 ```
 
 
@@ -42,6 +42,7 @@ Filtering allows us to choose certain rows (observations) in our dataset.
 ```{r}
 class(NTL.phys.data$lakeid)
 class(NTL.phys.data$depth)
+#helps to decide whether number or character - whether it needs to be in quotes or not
 
 # dplyr filtering
 NTL.phys.data.surface <- filter(NTL.phys.data, depth == 0)
@@ -57,16 +58,21 @@ NTL.phys.data.JunethruOctober <- filter(NTL.phys.data, daynum %in% c(152:304))
 # Exercise 1: 
 # filter NTL.phys.data for the year 1999
 # what code do you need to use, based on the class of the variable?
+class(NTL.phys.data$year4)
+NTL.phys.data.1999 <- filter(NTL.phys.data, year4 == 1999)
 
 
 # Exercise 2: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+NTL.phys.data.TuesdayLake.90s <- NTL.phys.data %>%
+  filter(lakename == "Tuesday Lake")%>%
+  filter(year4 %in% c(1990:1999))
 
 
 ```
 Question: Why don't we filter using row numbers?
 
-> Answer: 
+> Answer: Because then you need to look in the dataset for the specific row number which can be very tedious.
 
 ## Pipes
 
@@ -82,13 +88,22 @@ NTL.phys.data.processed <-
   mutate(temperature_F = (temperature_C*9/5) + 32)
 
 #Exercise 3: Using a pipe filter NTL.phys.data for Tuesday Lake from 1990 through 1999 only for July 
+NTL.phys.data <- mutate(NTL.phys.data, month = month(sampledate)) 
 
-
+NTL.phys.data.TuesdayLake.90s <- NTL.phys.data %>%
+  filter(lakename == "Tuesday Lake")%>%
+  filter(year4 >= 1990 & year4 <= 1999) %>%
+  filter(month == 7)
+#instead of mutating before, filter(month(sampledate)==7)
 
 
 
 #Exercise 4: Using the data from part 3, a pipe and the summarise() function find the mean surface temperature (hints: you will need to add another filter for depth==0). Make sure you eliminate NAs before computing the means
 
+NTL.phys.data.tempsummary <- NTL.phys.data.TuesdayLake.90s %>%
+  filter(depth == 0) %>%
+  subset(!is.na(temperature_C))%>% #could use filter instead of subset
+  summarise(meantemp = mean(temperature_C)) #creates new column that's named meantemp with mean temperatures
   
 ```
 
@@ -99,8 +114,12 @@ For gather we will use `pivot_longer` and for spread we will use `pivot_wider`.
 ```{r}
 #Exercise 5: gather irradiance data (measured in the water column and measured on the deck of the sampling boat) into one column using pivot_longer
 
+NTL.phys.data.gathered <- NTL.phys.data %>%
+  pivot_longer(irradianceWater:irradianceDeck, names_to = "irradianceLoc", values_to = "irradianceVal")
 
 #Exercise 6: spread temperatureC into more than one column based on the depth
+NTL.phys.data.spread <- NTL.phys.data %>%
+  pivot_wider(names_from = depth, values_from = temperature_C)
 
 ```
 
