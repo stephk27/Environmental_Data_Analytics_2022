@@ -115,7 +115,7 @@ For gather we will use `pivot_longer` and for spread we will use `pivot_wider`.
 #Exercise 5: gather irradiance data (measured in the water column and measured on the deck of the sampling boat) into one column using pivot_longer
 
 NTL.phys.data.gathered <- NTL.phys.data %>%
-  pivot_longer(irradianceWater:irradianceDeck, names_to = "irradianceLoc", values_to = "irradianceVal")
+  pivot_longer(irradianceWater:irradianceDeck, names_to = "irradianceLoc", values_to = "radiation")
 
 #Exercise 6: spread temperatureC into more than one column based on the depth
 NTL.phys.data.spread <- NTL.phys.data %>%
