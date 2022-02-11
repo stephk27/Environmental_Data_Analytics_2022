@@ -56,6 +56,9 @@ theme_set(mytheme)
 A linear regression is comprised of a continuous response variable, plus a combination of 1+ continuous response variables (plus the error term). The deterministic portion of the equation describes the response variable as lying on a straight line, with an intercept and a slope term. The equation is thus a typical algebraic expression: 
 $$ y = \alpha + \beta*x + \epsilon $$
 
+alpha = intercept, beta = slope for straight line
+E thing is error term
+
 The goal for the linear regression is to find a **line of best fit**, which is the line drawn through the bivariate space that minimizes the total distance of points from the line. This is also called a "least squares" regression. The remainder of the variance not explained by the model is called the **residual error.** 
 
 The linear regression will test the null hypotheses that
@@ -69,10 +72,12 @@ Important components of the linear regression are the correlation and the R-squa
 
 ## Simple Linear Regression
 
+one single variable = simple
+
 For the NTL-LTER dataset, can we predict irradiance (light level) from depth?
 
 ```{r}
-irradiance.regression <- lm(PeterPaul.chem.nutrients$irradianceWater ~ PeterPaul.chem.nutrients$depth)
+irradiance.regression <- lm(PeterPaul.chem.nutrients$irradianceWater ~ PeterPaul.chem.nutrients$depth) #y~x
 
 # another way to format the lm() function
 irradiance.regression <- lm(data = PeterPaul.chem.nutrients, irradianceWater ~ depth)
@@ -83,7 +88,7 @@ cor.test(PeterPaul.chem.nutrients$irradianceWater, PeterPaul.chem.nutrients$dept
 ```
 Question: How would you report the results of this test (overall findings and report of statistical output)?
 
->  
+>  ??We reject the null hypothesis and find that there is a negative correlation between irradiance and depth.
 
 So, we see there is a significant negative correlation between irradiance and depth (lower light levels at greater depths), and that this model explains about 31 % of the total variance in irradiance. Let's visualize this relationship and the model itself. 
 
@@ -91,16 +96,25 @@ An exploratory option to visualize the model fit is to use the function `plot`. 
 
 1. **Residuals vs. Fitted.** The value predicted by the line of best fit is the fitted value, and the residual is the distance of that actual value from the predicted value. By definition, there will be a balance of positive and negative residuals. Watch for drastic asymmetry from side to side or a marked departure from zero for the red line - these are signs of a poor model fit.
 
-2. **Normal Q-Q.** The points should fall close to the 1:1 line. We often see departures from 1:1 at the high and low ends of the dataset, which could be outliers. 
+#looking for symmetry on line
+
+2. **Normal Q-Q.** Quantile-quantile plot. Compare to a normal distribution. The points should fall close to the 1:1 line. We often see departures from 1:1 at the high and low ends of the dataset, which could be outliers. 
+
+#want data to follow dashed line
 
 3. **Scale-Location.** Similar to the residuals vs. fitted graph, this will graph the squared standardized residuals by the fitted values. 
 
+#want symmetry around the red line
+
 4. **Residuals vs. Leverage.** This graph will display potential outliers. The values that fall outside the dashed red lines (Cook's distance) are outliers for the model. Watch for drastic departures of the solid red line from horizontal - this is a sign of a poor model fit.
 
+#points outside of dashed lines are outliers
+
 ```{r, fig.height = 3, fig.width = 4}
-par(mfrow = c(2,2), mar=c(4,4,4,4))
+par(mfrow = c(2,2), mar=c(4,4,4,4)) #dividing plot screen into 4 cells to look at one plot at a time
 plot(irradiance.regression)
 par(mfrow = c(1,1))
+#can remove outliers if really affecting residuals plot
 ```
 
 The option best suited for communicating findings is to plot the explanatory and response variables as a scatterplot. 
@@ -109,19 +123,21 @@ The option best suited for communicating findings is to plot the explanatory and
 # Plot the regression
 irradiancebydepth <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
-  ylim(0, 2000) +
+  ylim(0, 2000) #removes outlier from appearing on plot+
   geom_point() 
 print(irradiancebydepth) 
 ```
 
+#Log transformation
 Given the distribution of irradiance values, we don't have a linear relationship between x and y in this case. Let's try log-transforming the irradiance values. Note we also removing the observations that seems to ba an outlier.
 
 ```{r, fig.height = 3, fig.width = 4}
 PeterPaul.chem.nutrients <- filter(PeterPaul.chem.nutrients, 
-                                   irradianceWater != 0 & irradianceWater < 5000)
+                                   irradianceWater != 0 & irradianceWater < 5000) #must eliminate 0s to take log and removes outlier
 irradiance.regression2 <- lm(data = PeterPaul.chem.nutrients, log(irradianceWater) ~ depth)
 summary(irradiance.regression2)
 
+#runs residuals plots again
 par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(irradiance.regression2)
 par(mfrow = c(1,1))
@@ -130,7 +146,7 @@ par(mfrow = c(1,1))
 irradiancebydepth2 <- 
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
   geom_smooth(method = "lm") +
-  scale_y_log10() +
+  scale_y_log10() + #log transforms axis without changing data set
   geom_point() 
 print(irradiancebydepth2) 
 
@@ -139,7 +155,7 @@ irradiancebydepth2 <-
     ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
     geom_point() +
     scale_y_log10() +  #log transformed values for irradianceWater
-    geom_smooth(method = 'lm', se = FALSE, color = "black")
+    geom_smooth(method = 'lm', se = FALSE, color = "black") #se = FALSE removes confidence interval
 print(irradiancebydepth2)
 
 # Make the graph attractive
@@ -147,12 +163,13 @@ print(irradiancebydepth2)
 ```
 
 ## Multiple Linear Regression
+#more than one ind x trying to explain variable y
 It is possible, and often useful, to consider multiple continuous explanatory variables at a time in a linear regression. For example, total phosphorus concentration in Paul Lake (the unfertilized lake) could be dependent on depth and dissolved oxygen concentration: 
 
 ``` {r, fig.height = 3, fig.width = 4}
 TPregression <- lm(data = subset(PeterPaul.chem.nutrients, lakename == "Paul Lake"), 
-                   tp_ug ~ depth + dissolvedOxygen)
-summary(TPregression)
+                   tp_ug ~ depth + dissolvedOxygen) #y ~ x + x
+summary(TPregression) #runs summary of lm regression
 
 TPplot <- ggplot(subset(PeterPaul.chem.nutrients, lakename == "Paul Lake"), 
                  aes(x = dissolvedOxygen, y = tp_ug, color = depth)) +
@@ -160,6 +177,7 @@ TPplot <- ggplot(subset(PeterPaul.chem.nutrients, lakename == "Paul Lake"),
   xlim(0, 20)
 print(TPplot)
 
+#residual plots
 par(mfrow = c(2,2), mar=c(4,4,4,4))
 plot(TPregression)
 par(mfrow = c(1,1))
@@ -174,16 +192,16 @@ We can also make exploratory plots of several continuous data points to determin
 library(corrplot)
 PeterPaulnutrients <- 
   PeterPaul.chem.nutrients %>%
-  select(tn_ug:po4) %>%
+  select(tn_ug:po4) %>% #selects this set of columns to compare
   na.omit()
-PeterPaulCorr <- cor(PeterPaulnutrients)
-corrplot(PeterPaulCorr, method = "ellipse")
-corrplot.mixed(PeterPaulCorr, upper = "ellipse")
+PeterPaulCorr <- cor(PeterPaulnutrients) #correlation function which creates matrix in Environment
+corrplot(PeterPaulCorr, method = "ellipse") #creates matrix with ellipse; thinner = more correlation, color shows positive vs. negative correlation
+corrplot.mixed(PeterPaulCorr, upper = "ellipse") #shows upper diagonal only and values of correlation
 ```
 
 ## AIC to select variables
 
-However, it is possible to over-parameterize a linear model. Adding additional explanatory variables takes away degrees of freedom, and if explanatory variables co-vary the interpretation can become overly complicated. Remember, an ideal statistical model balances simplicity and explanatory power! To help with this tradeoff, we can use the **Akaike's Information Criterion (AIC)** to compute a stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options. The smaller the AIC value, the better. 
+However, it is possible to over-parameterize a linear model. Adding additional explanatory variables takes away degrees of freedom, and if explanatory variables co-vary the interpretation can become overly complicated. Remember, an ideal statistical model balances simplicity and explanatory power! To help with this tradeoff, we can use the **Akaike's Information Criterion (AIC)** to compute a *stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options*. The smaller the AIC value, the better. 
 
 Let's say we want to know which explanatory variables will allow us to best predict total phosphorus concentrations. Potential explanatory variables from the dataset could include depth, dissolved oxygen, temperature, PAR, total N concentration, and phosphate concentration.
 
@@ -193,11 +211,13 @@ Paul.naomit <- PeterPaul.chem.nutrients %>%
   na.omit()
 
 TPAIC <- lm(data = Paul.naomit, tp_ug ~ depth + dissolvedOxygen + 
-              temperature_C + tn_ug + po4)
+              temperature_C + tn_ug + po4) #aiming to explain total phosphorous concentration by all these x variables
 
 #Choose a model by AIC in a Stepwise Algorithm
-step(TPAIC)
+step(TPAIC) #removes a variable one by one and runs a regression each time
 TPmodel <- lm(data = Paul.naomit, tp_ug ~ dissolvedOxygen + temperature_C + tn_ug)
 summary(TPmodel)
+
+#best regression based on this analysis considers oxygen, nitrogen, and temperature
 
 ```
