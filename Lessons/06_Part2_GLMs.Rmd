@@ -9,15 +9,29 @@ editor_options:
 ---
 
 ## Objectives
-2. Apply special cases of the GLM (ANOVA) to real datasets
+2. Apply special cases of the GLM (ANOVA) to real datasets - analysis of variance (ANOVA)
 3. Interpret and report the results of ANOVA in publication-style formats
+
+##Analysis of Variance (ANOVA)
+Comparing whether several populations have equal means.
+-factor: quantity under examination in experiment as a possible cause of variation
+-levels: populations - the measurements or strata of a factor
+-balanced design: all factor levels have equal sample sizes
+
+Assumptions:
+-all pops are normally distributed
+-pop variances are equal
+-observations are independent
 
 ## Set up
 ```{r, message = FALSE}
 getwd()
 library(tidyverse)
 #install.packages("agricolae")
-library(agricolae)   #you may need to install/update package "htmltools" before installing and loading agricolae
+library(agricolae) 
+#install.packages("htmltools")
+library(htmltools)
+#you may need to install/update package "htmltools" before installing and loading agricolae
 
 Litter <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
 
@@ -34,7 +48,7 @@ theme_set(mytheme)
 ### One-way ANOVA
 A one-way ANOVA is used when you have one categorical explanatory variable with more than two categories. In R, we can run the model with the function `lm` or `aov`, the latter of which will allow us to run post-hoc tests to determine pairwise differences.
 
-Does total litter biomass differ among sites at the Niwot Ridge LTER?
+**Does total litter biomass differ among sites at the Niwot Ridge LTER? - check if mean of biomass is different due to site location
 ```{r}
 # Wrangle the data
 Litter.Totals <- Litter %>%
@@ -45,10 +59,11 @@ summary(Litter.Totals)
 #check all value of plotID
 summary(Litter.Totals$plotID)
 
+#Test for assumptions:
 # Test for normality. 
 # Note: the important assumption for GLMs is normality of residuals, 
 # not necessarily normality of raw data. See below when we plot the model.
-# shapiro.test() performs the Shapiro-Wilk test of the null that data follows a normal distribution
+# shapiro.test() performs the Shapiro-Wilk test of the null that data follows a *normal distribution*
 
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_040"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_041"])
@@ -74,25 +89,29 @@ bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID)
 #results: reject null i.e. variances are not equal
 
 # Format ANOVA as aov
-Litter.Totals.anova <- aov(data = Litter.Totals, dryMass ~ plotID)
+Litter.Totals.anova <- aov(data = Litter.Totals, dryMass ~ plotID) #aov - ANOVA function(df, y ~ x)
 summary(Litter.Totals.anova)
+#H0 for ANOVA is mean is the same across all x 
 
-#results: reject null hypothesis i.e. difference between a pair of group means is statiscally significant
+#results: reject null hypothesis i.e. difference between a pair of group means is statiscally significant; but doesn't tell us which means are not the same
 
-# Format ANOVA as lm
+# Format ANOVA as lm function
 Litter.Totals.anova2 <- lm(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova2)
+#will have one row for each level of categorical data
 
 # Checking model fit and assumptions
 # ANOVA is robust against departures from normality.
 plot(Litter.Totals.anova2)
 
 # Post-hoc test
-# TukeyHSD() computes Tukey Honest Significant Differences
-TukeyHSD(Litter.Totals.anova)
+  #explore difference between multiple group means
+# TukeyHSD() computes Tukey Honest Significant Differences used for comparing all possible group pairings
+TukeyHSD(Litter.Totals.anova) #function should be run on result of anova test
 
 # Extract groupings for pairwise relationships
-Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
+Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE) #extract groupings for pair relationships
+#group = TRUE - groups levels that have the same mean
 Litter.Totals.groups
 
 # Graph the results
@@ -130,13 +149,13 @@ TukeyHSD(Litter.anova.2way)
 ```
 
 ### Interaction effects
-We may expect the effects of functional group and land cover to be dependent on each other. For instance, we may expect needle biomass to be larger in evergreen forests than in other land types. In this case, we might choose to run an interaction effects two-way ANOVA, which will examine the individual effects of the explanatory variables as well as the interaction of the explanatory variables.
+We may expect the effects of functional group and land cover to be dependent on each other. For instance, we may expect needle biomass to be larger in evergreen forests than in other land types. In this case, we might choose to run an interaction effects two-way ANOVA, which will *examine the individual effects of the explanatory variables as well as the interaction of the explanatory variables.*
 
 The output gives test statistics for each explanatory variable as well as the interaction effect of the explanatory variables. If the p-value for the interaction effect is less than 0.05, then we would consider the interaction among the explanatory variables to be significant.
 
 ```{r}
 # Format as aov
-Litter.anova.2way3 <- aov(data = Litter, dryMass ~ functionalGroup * nlcdClass)
+Litter.anova.2way3 <- aov(data = Litter, dryMass ~ functionalGroup * nlcdClass) #notice * - multiply to see interaction among to x variables
 summary(Litter.anova.2way3)
 
 # Format as lm
@@ -150,10 +169,13 @@ If the interaction is significant, we interpret pairwise differences for the int
 # Run a post-hoc test for pairwise differences
 TukeyHSD(Litter.anova.2way3)
 
+#to look at treatment groups
+#creates interaction of functional Group by class
 Litter.interaction <- with(Litter, interaction(functionalGroup, nlcdClass))
 
 #Litter.test <- cbind(Litter,Litter.interaction)
 
+#compare means for each level of interaction levels
 Litter.anova.2way5 <- aov(data = Litter, dryMass ~ Litter.interaction)
 
 Litter.groups <- HSD.test(Litter.anova.2way5, "Litter.interaction", group = TRUE)
