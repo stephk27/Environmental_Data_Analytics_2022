@@ -154,11 +154,19 @@ Needles_facet <- ggplot(subset(Litter, functionalGroup =="Needles"))+
   facet_wrap(vars(nlcdClass), nrow = 3, labeller = ncld_labels)+
   scale_x_date(date_breaks = "3 months", date_labels = "%b %Y")+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+<<<<<<< HEAD
   labs(x = "Date", y = "Dry Mass (g)")
+=======
+  labs(x = "Date", y = "Dry Mass (g)") #check units for dry mass
+>>>>>>> c12946ec2a13680fd1860961f9a4a6148c7c6210
 print(Needles_facet)
 
 
 ```
 Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
 
+<<<<<<< HEAD
 > Answer: In this case, Plot 7 is more effective because you can more clearly see the individual points for each class and, thereby, compare the differences in classes more easily.  In Plot 6, the points overlap in some cases making it difficult to see the range of points for a given class.  Because the plots can are aligned in Plot 7, this format still makes it easy to compare across classes for a given date.
+=======
+> Answer: In this case, Plot 7 is more effective because you can more clearly see the individual points for each class and, thereby, compare the differences in classes more easily.  
+>>>>>>> c12946ec2a13680fd1860961f9a4a6148c7c6210
