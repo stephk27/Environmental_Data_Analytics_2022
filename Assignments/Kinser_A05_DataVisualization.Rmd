@@ -39,9 +39,9 @@ getwd()
 library(tidyverse)
 library(cowplot)
 
-NTL_LTER <- read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
+NTL_LTER <- read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv")
 
-Litter <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
+Litter <- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv")
 
 NTL_LTER$sampledate <- as.Date(NTL_LTER$sampledate, format = "%Y-%m-%d")
 
@@ -83,7 +83,7 @@ plot4 <- ggplot(NTL_LTER, aes(x = po4, y = tp_ug)) +
   facet_wrap(vars(lakename), nrow = 2)+
   xlim(0,50)+
   geom_smooth(method = lm, color = "black")+
-  labs(x = "Phosphate Concentration (ug)", y = "Phosphorus Concentration (ug)") #check units***
+  labs(x = "Phosphate Concentration (ug)", y = "Phosphorus Concentration (ug)")
 print(plot4)
 
 ```
@@ -91,7 +91,7 @@ print(plot4)
 
 5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c) TN, with month as the x axis and lake as a color aesthetic. Then, create a cowplot that combines the three graphs. Make sure that only one legend is present and that graph axes are aligned.
 
-```{r, fig.height = 7, fig.width = 5}
+```{r, fig.height = 7, fig.width = 5, warning = FALSE}
 #5
 NTL_temp <- ggplot(NTL_LTER)+
   geom_boxplot(aes(x = as.factor(month), y = temperature_C, color = lakename))+
@@ -132,28 +132,33 @@ Question: What do you observe about the variables of interest over seasons and b
 
 7. [Niwot Ridge] Now, plot the same plot but with NLCD classes separated into three facets rather than separated by color. 
 
-```{r}
+```{r, warning = FALSE}
 #6
 Needles <- ggplot(subset(Litter, functionalGroup =="Needles"))+
   geom_point(aes(x = collectDate, y = dryMass, color = nlcdClass))+
-  scale_x_date(date_breaks = "6 months", date_labels = "%m-%Y")+
-  labs(x = "Date", y = "Dry Mass (g)", color = "Class")+ #check units for dry mass
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(x = "Date", y = "Dry Mass (g)", color = "Class")+
   scale_color_hue(labels = c("Evergreen/Forest", "Grassland/Herbaceous", "Shrub/Scrub")) #adjusting labels in legend
 print(Needles)
 
 
 #7
-ncld_labels <- as_labeller(c(evergreenForest = "Evergreen/Forest", grasslandHerbaceous = "Grassland/Herbaceous", shrubScrub = "Shrub/Scrub")) #creates labels for facets - applied with labeller
+#creates labels for facets - applied with labeller
+ncld_labels <- as_labeller(c(evergreenForest = "Evergreen/Forest", 
+          grasslandHerbaceous = "Grassland/Herbaceous", 
+          shrubScrub = "Shrub/Scrub")) 
 
 Needles_facet <- ggplot(subset(Litter, functionalGroup =="Needles"))+
   geom_point(aes(x = collectDate, y = dryMass))+
   facet_wrap(vars(nlcdClass), nrow = 3, labeller = ncld_labels)+
-  scale_x_date(date_breaks = "6 months", date_labels = "%m-%Y")+
-  labs(x = "Date", y = "Dry Mass (g)") #check units for dry mass
+  scale_x_date(date_breaks = "3 months", date_labels = "%b %Y")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))+
+  labs(x = "Date", y = "Dry Mass (g)")
 print(Needles_facet)
 
 
 ```
 Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
 
-> Answer: In this case, I think Plot 7 is more effective because you can more clearly see the individual points for each class and, thereby, compare the differences in classes more easily.  
+> Answer: In this case, Plot 7 is more effective because you can more clearly see the individual points for each class and, thereby, compare the differences in classes more easily.  In Plot 6, the points overlap in some cases making it difficult to see the range of points for a given class.  Because the plots can are aligned in Plot 7, this format still makes it easy to compare across classes for a given date.
