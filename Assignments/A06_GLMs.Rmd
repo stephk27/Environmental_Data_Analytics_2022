@@ -30,17 +30,23 @@ The completed exercise is due on Monday, February 28 at 7:00 pm.
 getwd()
 library(tidyverse)
 library(agricolae)
+library(lubridate)
+library(ggridges)
 
 
-read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
+NTL_LTER <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 
+#are there other columns that need to be formatted as date?
+
+NTL_LTER$sampledate <- as.Date(NTL_LTER$sampledate, format = "%m/%d/%y")
+class(NTL_LTER$sampledate)
 
 #2
-A5_theme <- theme_light(base_size = 12)+
+A6_theme <- theme_light(base_size = 12)+
    theme(axis.text = element_text(color = "black"), 
         legend.position = "right", panel.grid.minor = element_blank())
 
-theme_set(A5_theme)
+theme_set(A6_theme)
 
 
 ```
@@ -50,8 +56,8 @@ Our first research question is: Does mean lake temperature recorded during July 
 
 3. State the null and alternative hypotheses for this question:
 > Answer:
-H0: 
-Ha: 
+H0: The mean lake temperature at depth in July = 0 
+Ha: The mean != 0
 
 
 4.  Wrangle your NTL-LTER dataset with a pipe function so that the records meet the following criteria: 
@@ -64,23 +70,33 @@ Ha:
 ```{r scatterplot}
 #4
 
+NTL_LTER_tidy <- NTL_LTER %>%
+  mutate(month = month(sampledate))%>%
+  filter(month == 05) %>%
+  select(month, lakename, year4, daynum, depth, temperature_C)%>%
+  na.omit() #check if this is how I do the na.omit or should I be using is.na?
 
 #5
-
+plot_Q5<- ggplot(NTL_LTER_tidy, aes(x = depth, y = temperature_C)) +
+  geom_point()+
+  ylim(0,35)+
+  geom_smooth(method = lm, color = "darkred")+
+  labs(x = "Depth (m)", y = "Temp (C)")
+print(plot_Q5)
 
 ```
 
 
 6. Interpret the figure. What does it suggest with regards to the response of temperature to depth? Do the distribution of points suggest about anything about the linearity of this trend?
 
-> Answer: 
+> Answer: The figure suggests that temperatures generally decrease with a lower subsurface depth.  While there is a general downward sloping trend, the temperatures vary significantly with each depth measurement and the results do not show a linear trend.
 
 
 7. Perform a linear regression to test the relationship and display the results
 
 ```{r linear.regression}
 #7
-
+lm(NTL_LTER_tidy$temperature_C ~ NTL_LTER_tidy$depth)
 
 ```
 
