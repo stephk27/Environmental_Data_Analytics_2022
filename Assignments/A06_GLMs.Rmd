@@ -1,6 +1,6 @@
 ---
 title: "Assignment 6: GLMs (Linear Regressios, ANOVA, & t-tests)"
-author: "Student Name"
+author: "Stephanie Kinser"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -27,9 +27,20 @@ The completed exercise is due on Monday, February 28 at 7:00 pm.
 
 ```{r setup}
 #1
+getwd()
+library(tidyverse)
+library(agricolae)
+
+
+read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 
 
 #2
+A5_theme <- theme_light(base_size = 12)+
+   theme(axis.text = element_text(color = "black"), 
+        legend.position = "right", panel.grid.minor = element_blank())
+
+theme_set(A5_theme)
 
 
 ```
