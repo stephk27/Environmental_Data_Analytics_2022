@@ -124,6 +124,9 @@ Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
   labs(x = "Plot ID", y = "Dry Mass (g)") +
   ylim(0, 85)
 print(Litter.Totals.plot)
+
+#helps identify outliers
+#all observations with the same letter have the same mean
 ```
 
 What information does the output give us? How might we report this information in a report?

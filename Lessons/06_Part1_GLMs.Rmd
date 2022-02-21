@@ -21,10 +21,13 @@ The analysis of variance (ANOVA), and linear regression are special cases of the
 ### Choosing a model from your data: A "cheat sheet"
 
 **One-way ANOVA (Analysis of Variance):** Continuous response, one categorical explanatory variable with more than two categories.
+  -similar to simple linear regression
 
 **Two-way ANOVA (Analysis of Variance)** Continuous response, two categorical explanatory variables.
+  -similar to multiple linear regression
 
 **Single Linear Regression** Continuous response, one continuous explanatory variable.
+  -will create linear relationship for everything even if there is no good correlation
 
 **Multiple Linear Regression** Continuous response, two or more continuous explanatory variables.
 
@@ -60,6 +63,10 @@ alpha = intercept, beta = slope for straight line
 E thing is error term
 
 The goal for the linear regression is to find a **line of best fit**, which is the line drawn through the bivariate space that minimizes the total distance of points from the line. This is also called a "least squares" regression. The remainder of the variance not explained by the model is called the **residual error.** 
+  -difference of point in regression line and real observation
+  -want it to follow normal distribution
+  -want a mean of 0 - ideal for residual error
+  -always check residuals when you run a lm
 
 The linear regression will test the null hypotheses that
 
@@ -68,7 +75,18 @@ The linear regression will test the null hypotheses that
 
 Whether or not we care about the result of each of these tested hypotheses will depend on our research question. Sometimes, the test for the intercept will be of interest, and sometimes it will not.
 
-Important components of the linear regression are the correlation and the R-squared value. The **correlation** is a number between -1 and 1, describing the relationship between the variables. Correlations close to -1 represent strong negative correlations, correlations close to zero represent weak correlations, and correlations close to 1 represent strong positive correlations. The **R-squared value** is the correlation squared, becoming a number between 0 and 1. The R-squared value describes the percent of variance accounted for by the explanatory variables. 
+Important components of the linear regression are the correlation and the R-squared value. The **correlation** is a number between -1 and 1, describing the relationship between the variables. Correlations close to -1 represent strong negative correlations, correlations close to zero represent weak correlations, and correlations close to 1 represent strong positive correlations. The **R-squared value** is the correlation squared, becoming a number between 0 and 1. The R-squared value describes the percent of variance accounted for by the explanatory variables.
+  -r squared: tells how much of the variability in the model is explained by independent/explanatory variable
+  -stronger correlation = 1
+  -p value tells you significance of regression with respect to every coefficient; is it significantly different from 0?
+      -if not significantly different, then not a good measure
+      
+Three things to look for in lm:
+  -residuals
+  -r squared
+  -p value
+  
+If any of these things fail, then look at more variables.
 
 ## Simple Linear Regression
 
@@ -202,6 +220,7 @@ corrplot.mixed(PeterPaulCorr, upper = "ellipse") #shows upper diagonal only and 
 ## AIC to select variables
 
 However, it is possible to over-parameterize a linear model. Adding additional explanatory variables takes away degrees of freedom, and if explanatory variables co-vary the interpretation can become overly complicated. Remember, an ideal statistical model balances simplicity and explanatory power! To help with this tradeoff, we can use the **Akaike's Information Criterion (AIC)** to compute a *stepwise regression that either adds explanatory variables from the bottom up or removes explanatory variables from a full set of suggested options*. The smaller the AIC value, the better. 
+  -uses AIC to determine fit between independent & dependent variable
 
 Let's say we want to know which explanatory variables will allow us to best predict total phosphorus concentrations. Potential explanatory variables from the dataset could include depth, dissolved oxygen, temperature, PAR, total N concentration, and phosphate concentration.
 
