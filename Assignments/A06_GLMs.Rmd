@@ -147,11 +147,18 @@ summary(temp_model)
 12. Now we want to see whether the different lakes have, on average, different temperatures in the month of July. Run an ANOVA test to complete this analysis. (No need to test assumptions of normality or similar variances.) Create two sets of models: one expressed as an ANOVA models and another expressed as a linear model (as done in our lessons).
 
 ```{r anova.model}
+#Do we need to include all of the lead up tests that are in the labs? Do we need to group by lakename first? And should this incorporate depth?
 #12
-laketemp_lm <- lm(data = NTL_LTER_tidy, temperature_C ~ lakename)
+laketemp <- NTL_LTER %>%
+  group_by(lakename, temperature_C, depth) %>%
+  summarize(temperature_C = sum(temperature_C))
+
+#laketemp_lm <- lm(data = NTL_LTER_tidy, temperature_C ~ lakename)
+laketemp_lm <- lm(data = laketemp, temperature_C ~ lakename)
 summary(laketemp_lm)
 
-laketemp_anova <- aov(data = NTL_LTER_tidy, temperature_C ~ lakename)
+#laketemp_anova <- aov(data = NTL_LTER_tidy, temperature_C ~ lakename)
+laketemp_anova <- aov(data = laketemp, temperature_C ~ lakename)
 summary(laketemp_anova)
 
 
@@ -159,7 +166,7 @@ summary(laketemp_anova)
 
 13. Is there a significant difference in mean temperature among the lakes? Report your findings. 
 
-> Answer: 
+> Answer: The results show that we can reject the null hypothesis and that there is a statistically significant (p-value <= .05) difference in means between temperatures across the lakes. The lm and aov models report a similar p-value of approximately <2e-16.
 
 
 
@@ -170,7 +177,7 @@ summary(laketemp_anova)
 plot_Q14 <- ggplot(NTL_LTER_tidy, aes(x = depth, y = temperature_C, color = lakename)) +
   geom_point(alpha = 0.5)+
   ylim(0,35)+
-  geom_smooth(method = lm, color = "black")+
+  geom_smooth(method = lm, color = "black", se = FALSE)+
   labs(x = "Depth (m)", y = "Temp (C)", color = "Lake Name")
 print(plot_Q14)
 
@@ -180,13 +187,15 @@ print(plot_Q14)
 
 ```{r tukey.test}
 #15
-
+TukeyHSD(laketemp_anova)
 
 ```
 
 16.From the findings above, which lakes have the same mean temperature, statistically speaking, as Peter Lake? Does any lake have a mean temperature that is statistically distinct from all the other lakes?
 
->Answer:
+
+
+>Answer: Crampton Lake and Central Long Lake, and Ward Lake and Hummingbird Lake have very similar mean temperatures statistically because the p-values are greater than 0.05 and the difference in means is less than 1.  ##I need help with the second part of the question.
 
  
 
