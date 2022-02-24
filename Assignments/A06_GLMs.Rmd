@@ -41,6 +41,7 @@ NTL_LTER <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv")
 NTL_LTER$sampledate <- as.Date(NTL_LTER$sampledate, format = "%m/%d/%y")
 class(NTL_LTER$sampledate)
 
+
 #2
 A6_theme <- theme_light(base_size = 12)+
    theme(axis.text = element_text(color = "black"), 
@@ -56,8 +57,8 @@ Our first research question is: Does mean lake temperature recorded during July 
 
 3. State the null and alternative hypotheses for this question:
 > Answer:
-H0: The mean lake temperature at depth in July = 0 
-Ha: The mean != 0
+H0: The mean lake temperature does not change with depth in July. (Mean temperature across depths in July = 0)
+Ha: The mean lake temperature changes with depth in July (Mean temperature across depths in July != 0)
 
 
 4.  Wrangle your NTL-LTER dataset with a pipe function so that the records meet the following criteria: 
@@ -74,7 +75,7 @@ NTL_LTER_tidy <- NTL_LTER %>%
   mutate(month = month(sampledate))%>%
   filter(month == 05) %>%
   select(month, lakename, year4, daynum, depth, temperature_C)%>%
-  na.omit() #check if this is how I do the na.omit or should I be using is.na?
+  na.omit()
 
 #5
 plot_Q5<- ggplot(NTL_LTER_tidy, aes(x = depth, y = temperature_C)) +
@@ -90,7 +91,7 @@ print(plot_Q5)
 
 6. Interpret the figure. What does it suggest with regards to the response of temperature to depth? Do the distribution of points suggest about anything about the linearity of this trend?
 
-> Answer: The figure suggests that temperatures generally decrease with a lower subsurface depth.  While there is a general downward sloping trend, the temperatures vary significantly with each depth measurement and the results do not show a linear trend.
+> Answer: The figure suggests that temperatures generally decrease with a lower subsurface depth, demonstrating a negative relationship between temperature and depth.  While there is a general downward sloping trend, the temperatures vary significantly with each depth measurement and the results do not show a very good linear trend.
 
 
 7. Perform a linear regression to test the relationship and display the results
@@ -147,18 +148,14 @@ summary(temp_model)
 12. Now we want to see whether the different lakes have, on average, different temperatures in the month of July. Run an ANOVA test to complete this analysis. (No need to test assumptions of normality or similar variances.) Create two sets of models: one expressed as an ANOVA models and another expressed as a linear model (as done in our lessons).
 
 ```{r anova.model}
-#Do we need to include all of the lead up tests that are in the labs? Do we need to group by lakename first? And should this incorporate depth?
-#12
-laketemp <- NTL_LTER %>%
-  group_by(lakename, temperature_C, depth) %>%
-  summarize(temperature_C = sum(temperature_C))
+#should I incorporate depth somewhere in this model?
 
-#laketemp_lm <- lm(data = NTL_LTER_tidy, temperature_C ~ lakename)
-laketemp_lm <- lm(data = laketemp, temperature_C ~ lakename)
+#12
+
+laketemp_lm <- lm(data = NTL_LTER_tidy, temperature_C ~ lakename)
 summary(laketemp_lm)
 
-#laketemp_anova <- aov(data = NTL_LTER_tidy, temperature_C ~ lakename)
-laketemp_anova <- aov(data = laketemp, temperature_C ~ lakename)
+laketemp_anova <- aov(data = NTL_LTER_tidy, temperature_C ~ lakename)
 summary(laketemp_anova)
 
 
@@ -166,7 +163,7 @@ summary(laketemp_anova)
 
 13. Is there a significant difference in mean temperature among the lakes? Report your findings. 
 
-> Answer: The results show that we can reject the null hypothesis and that there is a statistically significant (p-value <= .05) difference in means between temperatures across the lakes. The lm and aov models report a similar p-value of approximately <2e-16.
+> Answer: The results show that we can reject the null hypothesis and that there is a statistically significant (p-value <= .05) difference in means between temperatures across the lakes. The lm and aov models report a similar p-value of approximately <2.6e-15.
 
 
 
@@ -177,7 +174,7 @@ summary(laketemp_anova)
 plot_Q14 <- ggplot(NTL_LTER_tidy, aes(x = depth, y = temperature_C, color = lakename)) +
   geom_point(alpha = 0.5)+
   ylim(0,35)+
-  geom_smooth(method = lm, color = "black", se = FALSE)+
+  geom_smooth(aes(group = lakename), method = lm, se = FALSE)+
   labs(x = "Depth (m)", y = "Temp (C)", color = "Lake Name")
 print(plot_Q14)
 
@@ -195,12 +192,12 @@ TukeyHSD(laketemp_anova)
 
 
 
->Answer: Crampton Lake and Central Long Lake, and Ward Lake and Hummingbird Lake have very similar mean temperatures statistically because the p-values are greater than 0.05 and the difference in means is less than 1.  ##I need help with the second part of the question.
+>Answer:
 
  
 
 17. If we were just looking at Peter Lake and Paul Lake. What's another test we might explore to see whether they have distinct mean temperatures? 
 
->Answer: 
+>Answer: The HSD test is another test we can use to explore whether Peter and Paul Lake have distinct mean temperatures.  The HSD test extracts groupings to understand pairwise relationships.
 
 
