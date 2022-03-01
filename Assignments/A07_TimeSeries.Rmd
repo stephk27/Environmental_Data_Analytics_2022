@@ -172,6 +172,7 @@ GaringerOzone.monthly.ts <- ts(GaringerOzone.monthly$Ozone, start = c(fmonth, fy
 ```{r}
 #11
 
+#when it asks to plot the components is it asking more than the simple plot function - do we need to re-aggregate them
 ozone_daily_decomp <- stl(GaringerOzone.daily.ts, s.window = "periodic")
 plot(ozone_daily_decomp)
 
