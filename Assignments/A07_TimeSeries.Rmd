@@ -1,6 +1,6 @@
 ---
 title: "Assignment 7: Time Series Analysis"
-author: "Student Name"
+author: "Stephanie Kinser"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -29,6 +29,19 @@ The completed exercise is due on Monday, March 14 at 7:00 pm.
 
 ```{r}
 #1
+getwd()
+
+library(tidyverse)
+library(lubridate)
+library(zoo)
+library(trend)
+library(dplyr)
+
+A7_theme <- theme_light(base_size = 12)+
+   theme(axis.text = element_text(color = "black"), 
+        legend.position = "right", panel.grid.minor = element_blank())
+
+theme_set(A7_theme)
 
 ```
 
@@ -37,6 +50,13 @@ The completed exercise is due on Monday, March 14 at 7:00 pm.
 
 ```{r, message = FALSE}
 #2
+Garinger_files <- setwd("./Data/Raw/Ozone_TimeSeries/")
+# Get the files names
+files = list.files(pattern="*.csv")
+# First apply read.csv, then rbind
+GaringerOzone = do.call(rbind, lapply(files, function(x) read.csv(x, stringsAsFactors = TRUE)))
+
+
 
 
 ```
@@ -53,12 +73,24 @@ The completed exercise is due on Monday, March 14 at 7:00 pm.
 
 ```{r}
 # 3
+GaringerOzone$Date <- as.Date(GaringerOzone$Date, format = "%d/%m/%Y")
+class(GaringerOzone$Date)
 
 # 4
+GaringerOzone_tidy <- GaringerOzone %>%
+  select(Date, Daily.Max.8.hour.Ozone.Concentration, DAILY_AQI_VALUE) %>%
+  rename(Ozone = Daily.Max.8.hour.Ozone.Concentration) %>%
+  rename(AQI = DAILY_AQI_VALUE)
+
 
 # 5
+Days = as.data.frame(seq(from = as.Date("2010-01-01"), to = as.Date("2019-12-31"), by = "day")) %>%
+  setNames(c("Date")) #renaming column to date
+class(Days$Date)
+
 
 # 6
+GaringerOzone <- left_join(Days, GaringerOzone_tidy) #Days must come first to join with its left most column
 
 ```
 
@@ -68,10 +100,15 @@ The completed exercise is due on Monday, March 14 at 7:00 pm.
 
 ```{r}
 #7
+ozone_plot <- ggplot(GaringerOzone, aes(x = Date, y = Ozone)) +
+  geom_line() +
+  geom_smooth(method = lm)+
+  labs(x = "Date", y = "Ozone (ppm)")
+ozone_plot
 
 ```
 
->Answer: 
+>Answer: The plot suggests that ozone concentrations have decreased slightly from 2010 to 2019.
 
 ## Time Series Analysis
 
@@ -81,16 +118,24 @@ Study question: Have ozone concentrations changed over the 2010s at this station
 
 ```{r}
 #8
+#this is not working - NEED HELP
+summary(GaringerOzone)
+GaringerOzone_test2 <- 
+  GaringerOzone %>% 
+  mutate(Ozone = zoo::na.approx(Ozone))
 
 ```
 
-> Answer:  
+> Answer:  We did not use piecewise constant because much of the missing data's "nearest neighbor" is also missing, so the observations cannot be easily filled in with data from observations on nearby dates.  We do not use a spline function because our data does not show a quadratic trend.
 
 
 9. Create a new data frame called `GaringerOzone.monthly` that contains aggregated data: mean ozone concentrations for each month. In your pipe, you will need to first add columns for year and month to form the groupings. In a separate line of code, create a new Date column with each month-year combination being set as the first day of the month (this is for graphing purposes only)
 
 ```{r}
 #9
+GaringerOzone.monthly <- 
+  GaringerOzone %>%
+  
 
 ```
 
