@@ -43,6 +43,7 @@ Research question: Can you see any changes on the rainfall regime or average tem
 
 ```{r}
 #Exercise 1: Import both datasets using the read.csv function.
+getwd()
 Rainfall_BR <- read.csv("./Data/Raw/pr_1901_2016_BRA.csv", stringsAsFactors = TRUE)
 
 Temp_BR <- read.csv("./Data/Raw/tas_1901_2016_BRA.csv", stringsAsFactors = TRUE)

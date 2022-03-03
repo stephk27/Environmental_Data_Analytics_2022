@@ -33,9 +33,9 @@ getwd()
 
 library(tidyverse)
 library(lubridate)
-library(zoo)
 library(trend)
 library(dplyr)
+library(zoo)
 
 A7_theme <- theme_light(base_size = 12)+
    theme(axis.text = element_text(color = "black"), 
@@ -51,13 +51,36 @@ theme_set(A7_theme)
 ```{r, message = FALSE}
 #2
 Garinger_files <- setwd("./Data/Raw/Ozone_TimeSeries/")
+getwd()
+
+# o2010 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2010_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2011 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2011_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2012 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2012_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2013 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2013_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2014 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2014_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2015 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2015_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2016 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2016_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2017 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2017_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2018 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2018_raw.csv", stringsAsFactors = TRUE)
+# 
+# o2019 <- read.csv("./Data/Raw/Ozone_TimeSeries/EPAair_O3_GaringerNC2019_raw.csv", stringsAsFactors = TRUE)
+# 
+# GaringerOzone <- rbind(o2010, o2011, o2012, o2013, o2014, o2015, o2016, o2017, o2018, o2019)
+
+
 # Get the files names
 files = list.files(pattern="*.csv")
+
 # First apply read.csv, then rbind
 GaringerOzone = do.call(rbind, lapply(files, function(x) read.csv(x, stringsAsFactors = TRUE)))
-
-
-
 
 ```
 
@@ -73,7 +96,7 @@ GaringerOzone = do.call(rbind, lapply(files, function(x) read.csv(x, stringsAsFa
 
 ```{r}
 # 3
-GaringerOzone$Date <- as.Date(GaringerOzone$Date, format = "%d/%m/%Y")
+GaringerOzone$Date <- as.Date(GaringerOzone$Date, format = "%m/%d/%Y")
 class(GaringerOzone$Date)
 
 # 4
@@ -84,13 +107,13 @@ GaringerOzone_tidy <- GaringerOzone %>%
 
 
 # 5
-Days = as.data.frame(seq(from = as.Date("2010-01-01"), to = as.Date("2019-12-31"), by = "day")) %>%
+Days = as.data.frame(seq(from = as.Date("2010-01-01"), to = as.Date("2019-12-31"), by = "day")) %>% #by = 1 OR day
   setNames(c("Date")) #renaming column to date
 class(Days$Date)
 
 
 # 6
-GaringerOzone <- left_join(Days, GaringerOzone_tidy) #Days must come first to join with its left most column
+GaringerOzone <- left_join(Days, GaringerOzone_tidy, by = "Date") #Days must come first to join with its left most column
 
 ```
 
@@ -108,7 +131,7 @@ ozone_plot
 
 ```
 
->Answer: The plot suggests that ozone concentrations have decreased slightly from 2010 to 2019.
+>Answer: The plot suggests a seasonal trend for ozone and also that ozone concentrations have decreased slightly from 2010 to 2019.
 
 ## Time Series Analysis
 
@@ -118,9 +141,9 @@ Study question: Have ozone concentrations changed over the 2010s at this station
 
 ```{r}
 #8
-#this is not working - NEED HELP
+
 summary(GaringerOzone)
-GaringerOzone_test2 <- 
+GaringerOzone <- 
   GaringerOzone %>% 
   mutate(Ozone = zoo::na.approx(Ozone))
 
@@ -138,12 +161,12 @@ GaringerOzone.monthly <-
   GaringerOzone %>%
   mutate(month = month(Date)) %>%
   mutate(year = year(Date)) %>%
-  filter(!is.na(Ozone)) %>% #once interpolated I don't think I'll need this line
   group_by(year, month) %>%
   summarise(mean_Ozone = mean(Ozone))
 
 #new date column
 GaringerOzone.monthly$monthyear <- paste("01", GaringerOzone.monthly$month, GaringerOzone.monthly$year, sep = "-")
+
 #change to Date format
 GaringerOzone.monthly$monthyear <- as.Date(GaringerOzone.monthly$monthyear, format = "%d-%m-%Y" )
 class(GaringerOzone.monthly$monthyear)
@@ -156,13 +179,13 @@ class(GaringerOzone.monthly$monthyear)
 
 ```{r}
 #10
-fday <- day(first(GaringerOzone$Date))
+fday <- day(first(GaringerOzone$Date)) #probably assumes first day of the month
 fmonth <- month(first(GaringerOzone$Date))
 fyear <- year(first(GaringerOzone$Date))
 
-GaringerOzone.daily.ts <- ts(GaringerOzone$Ozone, start = c(fday, fmonth, fyear), frequency = 365) #check frequency and start
+GaringerOzone.daily.ts <- ts(GaringerOzone$Ozone, start = c(fmonth, fyear), frequency = 365)#check frequency and start
 
-GaringerOzone.monthly.ts <- ts(GaringerOzone.monthly$Ozone, start = c(fmonth, fyear), frequency = 12) #I don't understand fmonth, year, and frequency
+GaringerOzone.monthly.ts <- ts(GaringerOzone.monthly$mean_Ozone, start = c(fmonth, fyear), frequency = 12) #I don't understand fmonth, year, and frequency
 
 ```
 
@@ -172,7 +195,6 @@ GaringerOzone.monthly.ts <- ts(GaringerOzone.monthly$Ozone, start = c(fmonth, fy
 ```{r}
 #11
 
-#when it asks to plot the components is it asking more than the simple plot function - do we need to re-aggregate them
 ozone_daily_decomp <- stl(GaringerOzone.daily.ts, s.window = "periodic")
 plot(ozone_daily_decomp)
 
@@ -211,7 +233,14 @@ summary(ozone_monthly_trend)
 ```{r}
 # 13
 
-
+ozone_monthly_plot <-
+ggplot(GaringerOzone.monthly, aes(x = monthyear, y = mean_Ozone)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Date", y = "Monthly Mean Ozone (ppm)") +
+  geom_smooth( method = lm )+
+  theme(axis.text = element_text(size = 8), axis.title = element_text(size = 8))
+print(ozone_monthly_plot)
 
 ```
 
@@ -225,8 +254,26 @@ summary(ozone_monthly_trend)
 
 ```{r}
 #15
+#NEED HELP
+
+#object time series will have each stl component
+#specify start date but not end date
+ozone_nonseasonal <- as.data.frame(ozone_monthly_decomp$time.series[,1], ozone_monthly_decomp$time.series[,3], ozone_monthly_decomp$time.series[,4])
+
+
+#add column with observed data and adding date object
+ozone_nonseasonal <- mutate(ozone_Components,
+        Observed = GaringerOzone.monthly$Ozone,     
+        Date = GaringerOzone.monthly$monthyear)
+
 
 #16
+
+ozone_nonseasonal <- Kendall::MannKendall(GaringerOzone.monthly.ts)
+
+# Inspect results
+ozone_nonseasonal
+summary(ozone_nonseasonal)
 
 ```
 
