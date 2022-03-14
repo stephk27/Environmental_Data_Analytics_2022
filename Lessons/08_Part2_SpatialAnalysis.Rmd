@@ -264,7 +264,7 @@ huc8_nc_raw <- read.csv(
 
 
 #Join to HUC_8 features
-huc8_join <- merge(huc8_sf, huc8_nc_raw, by = "HUC_8")
+huc8_join <- merge(huc8_sf, huc8_nc_raw, by.x = "HUC_8", by.y = "HUC_8")
 
 
 
@@ -272,7 +272,8 @@ huc8_join <- merge(huc8_sf, huc8_nc_raw, by = "HUC_8")
 mapview(huc8_join, zcol = "WindEnergy") #OR
 
 ggplot(huc8_join) + 
-  geom_sf(aes(color = WindEnergy)) 
+  geom_sf(aes(fill = WindEnergy)) + 
+  labs(title = "Wind Energy by HUC 8", fill = "MW/year")
 
 
 ```
