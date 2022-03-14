@@ -58,11 +58,19 @@ The `sf` package enables a new data type to be included in our data frames - the
 These geometries represent features located in geographic space. (There are other geometry types, with a full set listed [here](https://bit.ly/3hrPcZO). However, to keep things simple, we'll focus on points, lines, and polygons.)
 
 ![Figure 1. Spatial features represented as points, lines, and polygons.](img/vector_mode.jpg)
+Feature is set of coordinates - can create points, lines, or polygons
+raster - parses landscape into grid rather than points, lines, or polygones
+  image data (pixels)
 ## 2.4 Coordinate reference systems (crs)
 A **coordinate reference system** or **crs** includes the information used to reference the coordinates used in defining a geometry with actual geographic locations. These will be discussed more later. 
+  way to map points onto a plane even though the world is spherical
+  coordinate transformations: transferring one coordinate system to another
+  WGS84 - most popular coordinate system
+  UTM - for projected or planar system - longitudinal slices
 
 ## 2.3 Simple feature: geometry + attributes + crs
 A **simple feature** is one geographic element along with it's attributes. In other words, it's a row in a dataframe when that dataframe includes a column for geometry. 
+  a single row
 
 ## 2.4 Spatial dataframe 
 A **spatial dataframe**, also referred to as **simple features** (or `sf`), **spatially enabled dataframe**, or **geodataframe** is a collection of simple features (geometry + attribute + crs) stored in the format of a dataframe. It inherits all the capabilities of a standard dataframe but also has spatial analysis capabilities. 
@@ -98,6 +106,8 @@ mapview(GasPlants)
 
 
 ## EXERCISE: Creating a spatial dataframe from coordinate columns
+can't read in geographic data with csv because don't store spatial data - can have coordinates
+shape files - many files wrapped in GeoJSON
 
 ```{r Create a spatial dataframe from coordinate data}
 

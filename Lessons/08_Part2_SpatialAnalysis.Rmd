@@ -25,8 +25,11 @@ At the end of this lesson, you should be able to:
 Specifically, we'll [re]examine the following:
 - Reading shapefiles into R with `sf` 
 - Spatial aggregation with `group_by` and `summarize` or `st_union` 
+    can group by spatial features (eg. county)
+    spatial features dissolve (merge together)
 - Visualizing multiple datasets 
 - Changing CRS with `transform` 
+    coordinate system transformation
 - Attribute joins with `merge` 
 - Spatial joins 
 - Geometry manipulations
@@ -90,6 +93,7 @@ Below we read in the USA counties shapefile, filtering for just the NC features 
 #
 counties_sf<- st_read('./Data/Spatial/cb_2018_us_county_20m.shp') %>% 
   filter(STATEFP == 37) #Filter for just NC Counties
+#read in spatial data sets (shape file = GeoJSON)
 
 #
 colnames(counties_sf)
@@ -117,18 +121,25 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r read HUCs shapefile}
 #Read the shapefile into an sf dataframe named "huc8_sf"
+#huc = Hydrologic Unicode
+huc8_sf<- st_read('./Data/Spatial/NCHUC8.shp')
+
 
 
 #Reveal the columns
-
+colnames(huc8_sf)
 
 #Check the CRS
-
+st_crs(huc8_sf)
 
 #Examine some records
-
+head(huc8_sf)
 
 #View the data as a map, colored by the acreage in each
+mapView(huc8_sf, zcol = "ACRES") #OR
+ggplot()+
+  geom_sf(data = huc8_sf, aes(fill = ACRES))
+
 
 
 ```
@@ -139,11 +150,16 @@ mapView(counties_sf, zcol = "AWATER")
 
 ```{r Select the Upper Neuse HUC 8}
 #Read the shapefile into an sf dataframe
+huc8_sf_challenge <- st_read('./Data/Spatial/NCHUC8.shp') %>%
+  filter(SUBBASIN == "Upper Neuse")
 
+head(huc8_sf_challenge)
 
 
 #Create a map
-
+ggplot() +
+  geom_sf(data = huc8_sf, aes(fill = 'orange')) +
+  geom_sf(data = huc8_sf_challenge, aes(fill = 'purple'))
 
 ```
 
@@ -239,17 +255,24 @@ ggplot() +
 
 ```{r}
 #Compute HUC8 wind energy
-
+huc8_nc_raw <- read.csv(
+  'https://raw.githubusercontent.com/ENV859/EnviroAtlasData/main/Wind_Energy.csv', colClasses = c('HUC_12' = 'factor')) %>%
+  mutate(HUC_8 = substr(HUC_12, 0, 8)) %>%
+  group_by(HUC_8) %>%
+  summarise(WindEnergy = sum(AvgWindEnergy))
 
 
 
 #Join to HUC_8 features
-
+huc8_join <- merge(huc8_sf, huc8_nc_raw, by = "HUC_8")
 
 
 
 #View the outputs
+mapview(huc8_join, zcol = "WindEnergy") #OR
 
+ggplot(huc8_join) + 
+  geom_sf(aes(color = WindEnergy)) 
 
 
 ```
