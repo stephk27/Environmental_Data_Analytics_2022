@@ -1,6 +1,6 @@
 ---
 title: "Assignment 9: Spatial Analysis in R"
-author: "Student Name"
+author: "Stephanie Kinser"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -30,10 +30,16 @@ This exercise accompanies the lessons in Environmental Data Analytics (ENV872L) 
 
 ```{r Prepare workspace}
 #1.
+getwd()
+
 
 
 #2. 
-
+library(tidyverse)
+library(sf)
+#install.packages("leaflet")
+library(leaflet)
+library(mapview)
 
 ```
 
@@ -47,18 +53,21 @@ In this exercise, we will be exploring stream gage height data in Nebraska corre
 
 ```{r Read the county data into an sf dataframe}
 #3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
-
+ne_floods <- st_read('./Data/Spatial/cb_2018_us_county_20m.shp')%>% 
+  filter(STATEFP == 31) #Filter for just NB Counties
 
 #4. Reveal the CRS of the counties features
+st_crs(ne_floods)
 
 
 #5. Plot the data
+mapview(ne_floods)
 
 ```
 
 6. What is the EPSG code of the Counties dataset? Is this a geographic or a projected coordinate reference system? (Or, does this CRS use angular or planar coordinate units?) To what datum is this CRS associated? (Tip: look the EPSG code on <https://spatialreference.org>) 
 
-> ANSWER: 
+> ANSWER: The EPSG code is 4269 and this is a ___ coordinate reference system.  THe datum is associated with the North American Datum 1983.
 > 
 
 
@@ -72,15 +81,16 @@ Next we'll read in some USGS/NWIS gage location data added to the `Data/Raw` fol
 
 ```{r Read in USGS Gage Locations}
 #7. Read in gage locations csv as a dataframe
-
+ne_gage <- read_csv('./Data/Raw/NWIS_SiteInfo_NE_RAW.csv')
 
 #8. Reveal the names of the columns
+colnames(ne_gage)
 
 
 ```
 
 9. What columns in the dataset contain the x and y coordinate values, respectively?  
-> ANSWER:
+> ANSWER: The dec_lat_va column contains the x coordinate values and the dec_long_va column contains the y coordinate values.
 > 
 
 
