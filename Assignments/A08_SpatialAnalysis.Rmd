@@ -35,13 +35,13 @@ getwd()
 
 
 #2. 
-install.packages("tidyverse")
+#install.packages("tidyverse")
 library(tidyverse)
-install.packages("sf")
+#install.packages("sf")
 library(sf)
-install.packages("leaflet")
+#install.packages("leaflet")
 library(leaflet)
-install.packages("mapview")
+#install.packages("mapview")
 library(mapview)
 
 ```
@@ -56,21 +56,22 @@ In this exercise, we will be exploring stream gage height data in Nebraska corre
 
 ```{r Read the county data into an sf dataframe}
 #3. Read in Counties shapefile into an sf dataframe, filtering for just NE counties
-ne_floods <- st_read('./Data/Spatial/cb_2018_us_county_20m.shp')%>% 
-  filter(STATEFP == 31) #Filter for just NB Counties
+ne_counties <- st_read('./Data/Spatial/cb_2018_us_county_20m.shp')%>% 
+  filter(STATEFP == 31) #Filter for just NE Counties
 
 #4. Reveal the CRS of the counties features
-st_crs(ne_floods)
+st_crs(ne_counties)
+ne_counties_utm <- st_transform(ne_counties, crs = 26917)
 
 
 #5. Plot the data
-mapview(ne_floods)
+mapview(ne_counties_utm)
 
 ```
 
 6. What is the EPSG code of the Counties dataset? Is this a geographic or a projected coordinate reference system? (Or, does this CRS use angular or planar coordinate units?) To what datum is this CRS associated? (Tip: look the EPSG code on <https://spatialreference.org>) 
 
-> ANSWER: The EPSG code is 4269 and this is a ___ coordinate reference system.  THe datum is associated with the North American Datum 1983.
+> ANSWER: The EPSG code is 4269. The ESPG stands for the European Petroleum Survey Group and they maintain a coordinate reference system.  The datum is associated with the North American Datum 1983.  The CRS uses angular coordinate units.
 > 
 
 
@@ -93,7 +94,7 @@ colnames(ne_gage)
 ```
 
 9. What columns in the dataset contain the x and y coordinate values, respectively?  
-> ANSWER: The dec_lat_va column contains the x coordinate values and the dec_long_va column contains the y coordinate values.
+> ANSWER: The dec_lat_va column contains the y coordinate values and the dec_long_va column contains the x coordinate values.
 > 
 
 
@@ -106,20 +107,20 @@ colnames(ne_gage)
 
 ```{r Convert dataframe to sf dataframe}
 #10. Convert to an sf object
-ne_gage_sf <- ne_gage %>% 
-  st_as_sf(coords = c('dec_lat_va','dec_long_va'),
-           crs=4326)
+ne_gage_sf <- st_as_sf(gage, coords = c('dec_long_va', 'dec_lat_va'), crs = 4269)
 
 
 #11. Re-examine the column names
+colnames(ne_gage)
+colnames(ne_gage_sf)
 
+mapview(ne_gag)
 
 ```
 
 12. What new field(s) appear in the sf dataframe created? What field(s), if any, disappeared?
 
->ANSWER: 
->
+>ANSWER: The new field is "geometry" (the coordinates) and the fields that disappeared when combined into coordinates are "dec_lat_va" (the latitude) and "dec_long_va" (the longitude). 
 
 
 ### Plot the gage locations on top of the counties
@@ -131,6 +132,14 @@ ne_gage_sf <- ne_gage %>%
 
 ```{r Plot the spatial features}
 #13. Plot the gage locations atop the county features
+
+ggplot()+
+  geom_sf(data = ne_counties, color='black',size=2) +
+  geom_sf(data = ne_counties_utm, color = 'black', fill = "white")  +
+  geom_sf(data = ne_gage_sf, color='blue', size = 2) + 
+  labs(title = "NWIS Gage Locations in Nebraska", subtitle = "Stephanie Kinser")
+
+
 
 
 ```
@@ -150,18 +159,23 @@ Lastly, we want to attach some gage height data to our site locations. I've cons
 
 ```{r}
 #14. Read the site flow data into a data frame
+ne_flow <- st_read('./Data/Raw/NWIS_SiteFlowData_NE_RAW.csv')
 
 
 #15. Show the column names
+colnames(ne_flow)
 
 
 #16. Join location data to it
+ne_flow_joined <- left_join(ne_gage, ne_flow)
 
 
 #17. Show the column names of the joined dataset
+colnames(ne_flow_joined)
 
 
 #18. Show the dimensions of this joined dataset
+dim(ne_flow_joined)
 
 
 ```
@@ -174,9 +188,15 @@ Now we can examine where the flooding appears most acute by visualizing gage hei
 
 ```{r}
 #Map the points, sized by gage height
+#NEED Help with this one
+
+ne_flow_joined_sf<- st_as_sf(ne_flow_joined, coords = c('dec_long_va', 'dec_lat_va'), crs = 4269)
+
+ggplot()+
+  geom_sf(data = ne_counties, fill='yellow') +
+  geom_sf(data = ne_flow_joined_sf, aes(color = gage_ht, color=gage_ht))
 
 
-#ggplot
 
 
 ```
