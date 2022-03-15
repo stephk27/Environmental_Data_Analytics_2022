@@ -35,10 +35,13 @@ getwd()
 
 
 #2. 
+install.packages("tidyverse")
 library(tidyverse)
+install.packages("sf")
 library(sf)
-#install.packages("leaflet")
+install.packages("leaflet")
 library(leaflet)
+install.packages("mapview")
 library(mapview)
 
 ```
@@ -103,6 +106,9 @@ colnames(ne_gage)
 
 ```{r Convert dataframe to sf dataframe}
 #10. Convert to an sf object
+ne_gage_sf <- ne_gage %>% 
+  st_as_sf(coords = c('dec_lat_va','dec_long_va'),
+           crs=4326)
 
 
 #11. Re-examine the column names
