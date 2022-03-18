@@ -107,14 +107,14 @@ colnames(ne_gage)
 
 ```{r Convert dataframe to sf dataframe}
 #10. Convert to an sf object
-ne_gage_sf <- st_as_sf(gage, coords = c('dec_long_va', 'dec_lat_va'), crs = 4269)
+ne_gage_sf <- st_as_sf(ne_gage, coords = c('dec_long_va', 'dec_lat_va'), crs = 4269)
 
 
 #11. Re-examine the column names
 colnames(ne_gage)
 colnames(ne_gage_sf)
 
-mapview(ne_gag)
+mapview(ne_gage_sf)
 
 ```
 
@@ -188,13 +188,20 @@ Now we can examine where the flooding appears most acute by visualizing gage hei
 
 ```{r}
 #Map the points, sized by gage height
-#NEED Help with this one
 
-ne_flow_joined_sf<- st_as_sf(ne_flow_joined, coords = c('dec_long_va', 'dec_lat_va'), crs = 4269)
+ne_flow_joined_sf <- st_as_sf(ne_flow_joined, coords = c('dec_long_va', 'dec_lat_va'), crs = 4269)
 
+#change gage_ht to continous variable
+ne_flow_joined_sf$gage_ht <- as.numeric(ne_flow_joined_sf$gage_ht)
+class(ne_flow_joined_sf$gage_ht)
+
+#plot gage_ht
 ggplot()+
-  geom_sf(data = ne_counties, fill='yellow') +
-  geom_sf(data = ne_flow_joined_sf, aes(color = gage_ht, color=gage_ht))
+  geom_sf(data = ne_counties, fill='white') +
+  geom_sf(data = ne_flow_joined_sf, aes(color=gage_ht))+
+  scale_color_gradient2(low="blue",high="red",midpoint = 16)+
+  labs(color = "Gage Height (m)")
+  
 
 
 
@@ -215,10 +222,14 @@ Up next we will do some spatial analysis with our data. To prepare for this, we 
 
 ```{r}
 #20 Transform the counties and gage location datasets to UTM Zone 14
+ne_counties_utm <- st_transform(ne_counties, crs=32614)
+  
+ne_flow_utm <- st_transform(ne_flow_joined_sf, crs=32614)
 
 
 #21 Plot the data
-
+mapview(ne_counties_utm, color = "black")+
+  mapview(ne_flow_utm, zcol="gage_ht", color = "white")
 
 ```
 
@@ -237,12 +248,18 @@ Now let's zoom into a particular county and examine the gages located there.
 ```{r}
 #22 Select the county
 
+Lancaster_county <- ne_counties %>%
+ filter(NAME=='Lancaster')
 
 #23 Select gages within the selected county
 
+Lancaster_gages <- ne_flow_joined_sf[Lancaster_county,] 
+st_crs(Lancaster_gages)
+
 
 #24 Plot
-
+mapview(Lancaster_county, color = "black")+
+  mapview(Lancaster_gages, zcol="gage_ht", color = "white")
 
 
 ```
