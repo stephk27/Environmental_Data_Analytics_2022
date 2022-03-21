@@ -197,6 +197,7 @@ df_withdrawals <- data.frame("Month" = rep(1:12),
          Facility_name = !!the_facility_name,
          Facility_type = !!the_facility_type,
          Date = my(paste(Month,"-",Year)))
+#two exclamation points say look for a variable called the "" - overriding default behavior of tidyverse
 
 #Plot 
 ggplot(df_withdrawals,aes(x=Date,y=Avg_Withdrawals_mgd)) + 
