@@ -1,6 +1,6 @@
 ---
 title: "Assignment 09: Data Scraping"
-author: "Student Name"
+author: "Stephanie Kinser"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
@@ -31,6 +31,18 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 ```{r, message = FALSE}
 #1
 
+getwd()
+
+library(tidyverse)
+library(lubridate)
+#install.packages("rvest")
+library(rvest)
+
+A9_theme <- theme_light(base_size = 12)+
+   theme(axis.text = element_text(color = "black"), 
+        legend.position = "right", panel.grid.minor = element_blank())
+
+theme_set(A9_theme)
 
 ```
 
@@ -45,6 +57,9 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 
 ```{r set.the.scraping.website}
 #2
+webpage <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2019')
+
+webpage
 
 
 ```
@@ -65,10 +80,15 @@ In the code chunk below scrape these values, assigning them to three separate va
 
 ```{r scrape.the.data}
 #3
-water.system.name <- 
-pswid <- 
-ownership <- 
-max.withdrawals.mgd <- 
+water.system.name <- webpage %>% html_nodes('div+ table tr:nth-child(1) td:nth-child(2)') %>% html_text()
+
+pswid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_text()
+
+ownership <- webpage %>% html_nodes('div+ table tr:nth-child(2) td:nth-child(4)') %>% html_text()
+
+#should this be average or max below - directions are inconsistent
+#max.withdrawals.mgd 
+avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% html_text()
 
 ```
 
@@ -83,8 +103,21 @@ max.withdrawals.mgd <-
 
 ```{r create.a.dataframe.from.scraped.data}
 #4
+dates <- c('01-2019', '05-2019', '09-2019', '02-2019', '06-2019', '10-2019', '03-2019', '07-2019', '11-2019', '04-2019', '07-2019', '12-2019')
 
+class(dates)
+as.Date(dates, format = "%m-%Y")
 
+water_df <- data.frame(
+  "Date" = as.Date(c('01-2019', '05-2019', '09-2019', '02-2019', '06-2019', '10-2019', '03-2019', '07-2019', '11-2019', '04-2019', '07-2019', '12-2019'), format = "%m-%Y"),
+  "Water_System" = rep(water.system.name, 12),
+  "Owner" = rep(ownership, 12),
+  "PSWID" = rep(pswid, 12),
+  "Average_Use" = avg.use.mgd
+)
+
+water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
+  
 
 #5
 
