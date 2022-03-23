@@ -34,6 +34,7 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 getwd()
 
 library(tidyverse)
+library(dplyr)
 #install.packages("lubridate")
 library(lubridate)
 #install.packages("rvest")
@@ -83,7 +84,7 @@ In the code chunk below scrape these values, assigning them to three separate va
 #3
 water.system.name <- webpage %>% html_nodes('div+ table tr:nth-child(1) td:nth-child(2)') %>% html_text()
 
-pswid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_text()
+pwsid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_text()
 
 ownership <- webpage %>% html_nodes('div+ table tr:nth-child(2) td:nth-child(4)') %>% html_text()
 
@@ -103,31 +104,26 @@ avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% h
 5. Plot the max daily withdrawals across the months for 2020
 
 ```{r create.a.dataframe.from.scraped.data}
-##HELP
 
 #4
-dates1 <- seq(as.Date("2019-01-01"), as.Date("2019-12-01"), by = "months")
-
-dates <- c('01-2019', '05-2019', '09-2019', '02-2019', '06-2019', '10-2019', '03-2019', '07-2019', '11-2019', '04-2019', '07-2019', '12-2019')
-
-class(dates)
-as.Date(x = dates, format)
+Month <- c(01, 05, 09, 02, 06, 10, 03, 07, 11, 04, 08, 12)
+Year <- rep(2019, 12)
 
 water_df <- data.frame(
-  "Date" = as.Date(c('01-2019', '05-2019', '09-2019', '02-2019', '06-2019', '10-2019', '03-2019', '07-2019', '11-2019', '04-2019', '07-2019', '12-2019'), format = "%m-%Y"),
+  "Month" = Month,
+  "Year" = Year,
+  "Date" = my(paste(Month,"-",Year)),
   "Water_System" = rep(water.system.name, 12),
   "Owner" = rep(ownership, 12),
-  "PSWID" = rep(pswid, 12),
-  "Average_Use" = avg.use.mgd
-)
+  "PWSID" = rep(pwsid, 12),
+  "Average_Use" = round(as.numeric(avg.use.mgd), 2)) %>%
+  arrange(Date)
 
-water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
-  
 
 #5
-ggplot(water_df, aes(x = Average_Use, y = Date)) +
+ggplot(water_df, aes(x = Date, y = Average_Use)) +
   geom_point() +
-  labs(title = "Durham Monthly Water Use", x = "Average Water Use (MGD)", y = "Month")
+  labs(title = "Durham Monthly Water Use (2019)", x = "Date", y = "Average Water Use (MGD)")
 
 
 ```
@@ -136,24 +132,37 @@ ggplot(water_df, aes(x = Average_Use, y = Date)) +
 
 ```{r construct.a.scraping.function}
 #6.
-scrape.it <- function(PWSID, the_year){
-  #Get the proper url
-    the_url <- read_html(paste('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', PWSID, '&year=', the_year))
+scrape.it <- function(PWSID, year){
   
+  #Get the proper webpage
+    webpage <- read_html(paste0('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', PWSID, '&year=', year))
+    
 
   #Locate elements and read their text attributes into variables
   water.system.name <- webpage %>% html_nodes('div+ table tr:nth-child(1) td:nth-child(2)') %>% html_text()
 
-  pswid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_text()
+  pwsid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_text()
 
   ownership <- webpage %>% html_nodes('div+ table tr:nth-child(2) td:nth-child(4)') %>% html_text()
 
+  ##HELP
   #should this be average or max below - directions are inconsistent
   #max.withdrawals.mgd 
   avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% html_text()
   
   #Construct a dataframe from the values
-  
+  Month <- c(01, 05, 09, 02, 06, 10, 03, 07, 11, 04, 08, 12)
+  Year <- rep(year, 12)
+
+  the_df <- data.frame(
+    "Month" = Month,
+    "Year" = Year,
+    #"Date" = my(paste(Month,"-", Year)),
+    "Water_System" = rep(water.system.name, 12),
+    "Owner" = rep(ownership, 12),
+    "PWSID" = rep(pwsid, 12))
+    #"Average_Use" = round(as.numeric(avg.use.mgd), 2)) %>%
+    #arrange(Date)
   
   #Return the dataframe
   return(the_df)
