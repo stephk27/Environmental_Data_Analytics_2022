@@ -34,6 +34,7 @@ This exercise accompanies the lessons in Environmental Data Analytics on data sc
 getwd()
 
 library(tidyverse)
+#install.packages("lubridate")
 library(lubridate)
 #install.packages("rvest")
 library(rvest)
@@ -93,7 +94,7 @@ avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% h
 ```
 
 
-4. Convert your scraped data into a dataframe. This dataframe should have a column for each of the 4 variables scraped and a row for the month corresponding to the withdrawal data. Also add a Date column that includes your month and year in data format. (Feel free to add a Year column too, if you wish.)
+4. Convert your scraped data into a dataframe. This dataframe should have a column for each of the 4 variables scraped and a row for the month corresponding to the withdrawal data. Also add a Date column that includes your month and year in date format. (Feel free to add a Year column too, if you wish.)
 
 >TIP: Use `rep()` to repeat a value when creating a dataframe.
 
@@ -102,11 +103,15 @@ avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% h
 5. Plot the max daily withdrawals across the months for 2020
 
 ```{r create.a.dataframe.from.scraped.data}
+##HELP
+
 #4
+dates1 <- seq(as.Date("2019-01-01"), as.Date("2019-12-01"), by = "months")
+
 dates <- c('01-2019', '05-2019', '09-2019', '02-2019', '06-2019', '10-2019', '03-2019', '07-2019', '11-2019', '04-2019', '07-2019', '12-2019')
 
 class(dates)
-as.Date(dates, format = "%m-%Y")
+as.Date(x = dates, format)
 
 water_df <- data.frame(
   "Date" = as.Date(c('01-2019', '05-2019', '09-2019', '02-2019', '06-2019', '10-2019', '03-2019', '07-2019', '11-2019', '04-2019', '07-2019', '12-2019'), format = "%m-%Y"),
@@ -120,7 +125,9 @@ water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
   
 
 #5
-
+ggplot(water_df, aes(x = Average_Use, y = Date)) +
+  geom_point() +
+  labs(title = "Durham Monthly Water Use", x = "Average Water Use (MGD)", y = "Month")
 
 
 ```
@@ -129,7 +136,28 @@ water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
 
 ```{r construct.a.scraping.function}
 #6.
+scrape.it <- function(PWSID, the_year){
+  #Get the proper url
+    the_url <- read_html(paste('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=', PWSID, '&year=', the_year))
+  
 
+  #Locate elements and read their text attributes into variables
+  water.system.name <- webpage %>% html_nodes('div+ table tr:nth-child(1) td:nth-child(2)') %>% html_text()
+
+  pswid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_text()
+
+  ownership <- webpage %>% html_nodes('div+ table tr:nth-child(2) td:nth-child(4)') %>% html_text()
+
+  #should this be average or max below - directions are inconsistent
+  #max.withdrawals.mgd 
+  avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% html_text()
+  
+  #Construct a dataframe from the values
+  
+  
+  #Return the dataframe
+  return(the_df)
+}
 
 
 ```
@@ -138,7 +166,7 @@ water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
 
 ```{r fetch.and.plot.Durham.2015.data}
 #7
-
+Durham_2015 <- scrape.it(03-32-010, 2015)
 
 ```
 
@@ -146,7 +174,17 @@ water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
 
 ```{r fetch.and.plot.Durham.2015.data}
 #8
+Asheville_2015 <- scrape.it(01-11-010, 2015)
 
+#this might not be right. I just need to add rows.
+water_2015 <- rbind(Durham_2015, Asheville_2015) %>%
+  group_by("Owner")
+
+water_plot <- ggplot(water2015)+
+  geom_line(aes(x = Date, y = Average_Use, color = Water_System))+
+  labs(title = "Monthly Water Use", x = "Month", y = "Average Water Use (MGD)", color = "Water System Name")
+
+water_plot
 
 ```
 
@@ -155,8 +193,25 @@ water_df$Date <- as_date(water_df$Date, format = "%m-%Y")
 
 ```{r}
 #9
+Asheville_2010 <- scrape.it(01-11-010, 2010)
+Asheville_2011 <- scrape.it(01-11-010, 2011)
+Asheville_2012 <- scrape.it(01-11-010, 2012)
+Asheville_2013 <- scrape.it(01-11-010, 2013)
+Asheville_2014 <- scrape.it(01-11-010, 2014)
+Asheville_2015 <- scrape.it(01-11-010, 2015)
+Asheville_2016 <- scrape.it(01-11-010, 2016)
+Asheville_2017 <- scrape.it(01-11-010, 2017)
+Asheville_2018 <- scrape.it(01-11-010, 2018)
+Asheville_2019 <- scrape.it(01-11-010, 2019)
 
+Asheville_water <- rbind(Asheville_2010, Asheville_2011, Asheville_2012, Asheville_2013, Asheville_2014, Asheville_2015, Asheville_2016, Asheville_2017, Asheville_2018, Asheville_2019)
 
+Asheville_plot <- ggplot(Asheville_water, aes(x = Date, y = Average_Use)) +
+  geom_point()+
+  geom_smooth(method = lm)+
+  labs(title = "Asheville Water Use", x = "Date", y = "Average Water Use (MGD)")
+
+Asheville_plot
 ```
 
 >Question: Just by looking at the plot (i.e. not running statistics), does Asheville have a trend in water usage over time?
