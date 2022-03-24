@@ -50,7 +50,7 @@ theme_set(A9_theme)
 
 2. We will be scraping data from the NC DEQs Local Water Supply Planning website, specifically the Durham's 2019 Municipal Local Water Supply Plan (LWSP): 
  * Navigate to https://www.ncwater.org/WUDC/app/LWSP/search.php
- * Change the date from 2020 to 2019 in the upper right corner.
+ * Change the date from 2021 to 2020 in the upper right corner.
  * Scroll down and select the LWSP link next to Durham Municipality. 
  * Note the web address: <https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2020>
 
@@ -59,7 +59,7 @@ Indicate this website as the as the URL to be scraped. (In other words, read the
 
 ```{r set.the.scraping.website}
 #2
-webpage <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2019')
+webpage <- read_html('https://www.ncwater.org/WUDC/app/LWSP/report.php?pwsid=03-32-010&year=2020')
 
 webpage
 
@@ -88,9 +88,7 @@ pwsid <- webpage %>% html_nodes('td tr:nth-child(1) td:nth-child(5)') %>% html_t
 
 ownership <- webpage %>% html_nodes('div+ table tr:nth-child(2) td:nth-child(4)') %>% html_text()
 
-#should this be average or max below - directions are inconsistent
-#max.withdrawals.mgd 
-avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% html_text()
+max.withdrawals.mgd <- webpage %>% html_nodes('th~ td+ td') %>% html_text()
 
 ```
 
@@ -107,7 +105,7 @@ avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% h
 
 #4
 Month <- c(01, 05, 09, 02, 06, 10, 03, 07, 11, 04, 08, 12)
-Year <- rep(2019, 12)
+Year <- rep(2020, 12)
 
 water_df <- data.frame(
   "Month" = Month,
@@ -116,14 +114,14 @@ water_df <- data.frame(
   "Water_System" = rep(water.system.name, 12),
   "Owner" = rep(ownership, 12),
   "PWSID" = rep(pwsid, 12),
-  "Average_Use" = round(as.numeric(avg.use.mgd), 2)) %>%
+  "Max_Withdrawals" = round(as.numeric(max.withdrawals.mgd), 2)) %>%
   arrange(Date)
 
 
 #5
-ggplot(water_df, aes(x = Date, y = Average_Use)) +
+ggplot(water_df, aes(x = Date, y = Max_Withdrawals)) +
   geom_point() +
-  labs(title = "Durham Monthly Water Use (2019)", x = "Date", y = "Average Water Use (MGD)")
+  labs(title = "Durham Max Water Withdrawals (2020)", x = "Date", y = "Maximum Water Withdrawal (MGD)")
 
 
 ```
@@ -145,27 +143,22 @@ scrape.it <- function(PWSID, year){
 
   ownership <- webpage %>% html_nodes('div+ table tr:nth-child(2) td:nth-child(4)') %>% html_text()
 
-  ##HELP
-  #should this be average or max below - directions are inconsistent
-  #max.withdrawals.mgd 
-  avg.use.mgd <- webpage %>% html_nodes('.fancy-table:nth-child(31) th+ td') %>% html_text()
+  max.withdrawals.mgd <- webpage %>% html_nodes('th~ td+ td') %>% html_text()
+
   
   #Construct a dataframe from the values
-  Month <- c(01, 05, 09, 02, 06, 10, 03, 07, 11, 04, 08, 12)
+ Month <- c(01, 05, 09, 02, 06, 10, 03, 07, 11, 04, 08, 12)
   Year <- rep(year, 12)
 
-  the_df <- data.frame(
+  water_df <- data.frame(
     "Month" = Month,
     "Year" = Year,
-    #"Date" = my(paste(Month,"-", Year)),
+    "Date" = my(paste(Month,"-",Year)),
     "Water_System" = rep(water.system.name, 12),
     "Owner" = rep(ownership, 12),
-    "PWSID" = rep(pwsid, 12))
-    #"Average_Use" = round(as.numeric(avg.use.mgd), 2)) %>%
-    #arrange(Date)
-  
-  #Return the dataframe
-  return(the_df)
+    "PWSID" = rep(pwsid, 12),
+    "Max_Withdrawals" = round(as.numeric(max.withdrawals.mgd), 2)) %>%
+    arrange(Date)
 }
 
 
@@ -176,6 +169,10 @@ scrape.it <- function(PWSID, year){
 ```{r fetch.and.plot.Durham.2015.data}
 #7
 Durham_2015 <- scrape.it(03-32-010, 2015)
+
+ggplot(Durham_2015, aes(x = Date, y = Max_Withdrawals)) +
+  geom_point() +
+  labs(title = "Durham Max Water Withdrawals (2015)", x = "Date", y = "Maximum Water Withdrawal (MGD)")
 
 ```
 
