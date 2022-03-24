@@ -120,7 +120,8 @@ water_df <- data.frame(
 #5
 ggplot(water_df, aes(x = Date, y = Max_Withdrawals)) +
   geom_point() +
-  labs(title = "Durham Max Water Withdrawals (2020)", x = "Date", y = "Maximum Daily Water Withdrawal (MGD)")
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Durham Max Water Withdrawals (2020)", x = "Month", y = "Maximum Daily Water Withdrawal (MGD)")
 
 
 ```
@@ -173,7 +174,8 @@ Durham_2015 <- scrape.it("03-32-010", 2015)
 
 ggplot(Durham_2015, aes(x = Date, y = Max_Withdrawals)) +
   geom_point() +
-  labs(title = "Durham Max Water Withdrawals (2015)", x = "Date", y = "Maximum Daily Water Withdrawal (MGD)")
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Durham Max Water Withdrawals (2015)", x = "Month", y = "Maximum Daily Water Withdrawal (MGD)")
 
 ```
 
@@ -188,7 +190,8 @@ water_2015 <- rbind(Durham_2015, Asheville_2015) %>%
 
 water_plot <- ggplot(water_2015)+
   geom_point(aes(x = Date, y = Max_Withdrawals, color = Water_System))+
-  labs(title = "Monthly Water Use", x = "Month", y = "Maximum Daily Water Withdrawal (MGD)", color = "Water System")
+  scale_x_date(date_labels = "%b", date_breaks = "1 month") +
+  labs(title = "Max Water Withdrawals (2015)", x = "Month", y = "Maximum Daily Water Withdrawal (MGD)", color = "Water System")
 
 water_plot
 
