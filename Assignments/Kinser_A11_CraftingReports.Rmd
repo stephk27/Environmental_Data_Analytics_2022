@@ -249,3 +249,11 @@ pdf_document:
     fig_width: 4  
     citation_package: natbib  
     template:  
+    
+```{r, eval = FALSE}
+install_tinytex()
+
+update.packages(ask = FALSE, checkBuilt = TRUE)
+tinytex::reinstall_tinytex()
+```
+    
