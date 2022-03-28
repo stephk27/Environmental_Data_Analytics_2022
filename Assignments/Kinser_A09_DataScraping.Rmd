@@ -217,7 +217,7 @@ Asheville_water <- rbind(Asheville_2010, Asheville_2011, Asheville_2012, Ashevil
 
 Asheville_plot <- ggplot(Asheville_water, aes(x = Date, y = Max_Withdrawals)) +
   geom_point()+
-  geom_smooth(method = lm, se = FALSE)+
+  geom_smooth(method = loess, se = FALSE)+
   labs(title = "Asheville Maximum Water Withdrawals", x = "Date", y = "Maximum Daily Water Withdrawal (MGD)")
 
 Asheville_plot
