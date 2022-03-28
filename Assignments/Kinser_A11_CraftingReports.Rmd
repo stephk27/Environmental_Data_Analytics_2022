@@ -250,10 +250,8 @@ pdf_document:
     citation_package: natbib  
     template:  
     
-```{r, eval = FALSE}
-install_tinytex()
-
-update.packages(ask = FALSE, checkBuilt = TRUE)
-tinytex::reinstall_tinytex()
+```{r, eval = FALSE, include = FALSE}
+library(tinytex)
+install_tinytex(force = TRUE)
 ```
     
