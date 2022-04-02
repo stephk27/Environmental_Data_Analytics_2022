@@ -108,7 +108,7 @@ install.packages('knitr')
 
 Create an R chunk below called "setup" that checks your working directory, loads the packages `tidyverse`, `lubridate`, and `knitr`, and sets a ggplot theme. Remember that you need to disable R throwing a message, which contains a check mark that cannot be knitted.
 
-```{r Setup, include = FALSE, message = FALSE}
+```{r Setup, message=FALSE}
 
 getwd()
 

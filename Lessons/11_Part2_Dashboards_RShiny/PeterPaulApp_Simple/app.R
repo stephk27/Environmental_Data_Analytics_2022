@@ -16,7 +16,7 @@ ui <- fluidPage(
     sidebarPanel(
       
       # Select nutrient to plot
-      selectInput(inputId = "dropdown_input", 
+      selectInput(inputId = "dropdown_input", #internal, user does not see
                   label = "Nutrient",
                   choices = c("tn_ug", "tp_ug", "nh34", "no23", "po4"), 
                   selected = "tp_ug"),
@@ -32,7 +32,7 @@ ui <- fluidPage(
 server <- function(input, output) {
      
     # Create a ggplot object for the type of plot you have defined in the UI  
-       output$scatterplotty <- renderPlot({
+       output$scatterplotty <- renderPlot({ #render Plot based on below instructions
         ggplot(nutrient_data, 
                aes_string(x = "sampledate", y = input$dropdown_input, 
                           fill = "depth_id", shape = "lakename")) +
